@@ -2,6 +2,7 @@
 #+author: Jason Kinsfather
 #+email: jasonrkinsfather@gmail.com
 #+PROPERTY: header-args :tangle-mode (identity #o444)
+#+OPTIONS: toc:5
 
 * Inspirations
 - [[https://www.udemy.com/course/getting-yourself-organized-with-org-mode/learn/lecture/22210940#overview][Ranier Konig's Udemy Course]] and [[https://www.youtube.com/user/koenighaunstetten][YouTube channel]].
@@ -13,9 +14,52 @@
 - [[https://zzamboni.org/post/my-emacs-configuration-with-commentary/][Diego Zamboni's Literate Emacs Config]]
 - [[https://justin.abrah.ms/dotfiles/emacs.html][Justin Abrahms' Literate Emacs Config]]
 
-* Table of Contents
+* Table of Contents :QUOTE:TOC_4:
 #+BEGIN_QUOTE
-blah blah
+- [[#inspirations][Inspirations]]
+- [[#doom-module-declarations][Doom Module Declarations]]
+- [[#package-configuration][Package Configuration]]
+  - [[#header][Header]]
+  - [[#global-constants][Global Constants]]
+    - [[#contact-info][Contact info]]
+    - [[#directories][Directories]]
+      - [[#personal][Personal]]
+      - [[#org][Org]]
+  - [[#load-helper-functions][Load helper functions]]
+  - [[#visual-settings][Visual Settings]]
+    - [[#theme][Theme]]
+    - [[#startup-window][Startup Window]]
+  - [[#key-config][Key Config]]
+  - [[#org-1][Org]]
+    - [[#general-settings][General Settings]]
+      - [[#state-keyword-sequences][State Keyword Sequences]]
+      - [[#completion-timestamp][Completion Timestamp]]
+      - [[#logging][Logging]]
+      - [[#tag-definition][Tag Definition]]
+    - [[#super-agenda][Super Agenda]]
+      - [[#general-settings-1][General Settings]]
+      - [[#agenda-groups][Agenda Groups]]
+    - [[#org-capture][Org-Capture]]
+    - [[#org-journal-managing-daily-journal-file][org-journal: Managing daily journal file]]
+    - [[#org-roam-a-zettelkasten-based-on-roamresearch][org-roam: A Zettelkasten based on RoamResearch]]
+      - [[#capture-templates][Capture Templates]]
+      - [[#org-roam-dailies][Org-Roam Dailies]]
+    - [[#table-of-contents][Table-Of-Contents]]
+    - [[#org-download-inserting-images-into-org-mode][org-download: Inserting images into org-mode]]
+    - [[#org-cliplink-better-external-links][org-cliplink: Better external links]]
+  - [[#effective-editing][Effective Editing]]
+    - [[#structure-editing][Structure Editing]]
+    - [[#multiple-cursors][Multiple Cursors]]
+  - [[#ivy][Ivy]]
+  - [[#dired][Dired]]
+  - [[#search-utilities][Search Utilities]]
+    - [[#magit][Magit]]
+  - [[#autosave][Autosave]]
+  - [[#performance-tweaks][Performance Tweaks]]
+  - [[#misc-keybindings][Misc Keybindings]]
+  - [[#misc][Misc]]
+- [[#utility-functions][Utility functions.]]
+- [[#package-declarations][Package declarations]]
 #+END_QUOTE
 
 * Doom Module Declarations
@@ -849,6 +893,19 @@ Configure the capture template for org roam dailies.
         :olp ("My Journal"))))
 #+end_src
 
+*** Table-Of-Contents
+
+Updates the table of contents in an org file without exporting the file.
+
+To use, add the tag TOC to the heading for the table.
+Append _# with the number of subheadings you would like displayed.
+To place the table in a quote block below the heading add the tag QUOTE to the heading.
+
+#+begin_src emacs-lisp
+(use-package! toc-org
+  :hook (org-mode . toc-org-mode))
+#+end_src
+
 *** org-download: Inserting images into org-mode
 
 #+begin_src emacs-lisp
@@ -1092,9 +1149,10 @@ Any desired package not declared in a Doom module must be declared here. This se
 (package! real-auto-save)
 (package! aggressive-indent)
 (package! org-super-agenda :pin "f5e80e4d0d...")
-(package! doct
+(package! doct                  ;; Simpler Org Capture definitions
   :recipe (:host github :repo "progfolio/doct")
   :pin "a795fa4eaf...")
+(package! toc-org)              ;;Update Org file table of contents without exporting
 #+end_src
 
 #+RESULTS:

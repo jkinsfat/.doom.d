@@ -487,6 +487,9 @@
         :head "#+title: %<%Y-%m-%d>\n"
         :olp ("My Journal"))))
 
+(use-package! toc-org
+  :hook (org-mode . toc-org-mode))
+
 (use-package! org-download
   :config
   ;; take an image that is already on the clipboard
