@@ -1,0 +1,1101 @@
+#+TITLE: Doom Configuration
+#+author: Jason Kinsfather
+#+email: jasonrkinsfather@gmail.com
+#+PROPERTY: header-args :tangle-mode (identity #o444)
+
+* Inspirations
+- [[https://www.udemy.com/course/getting-yourself-organized-with-org-mode/learn/lecture/22210940#overview][Ranier Konig's Udemy Course]] and [[https://www.youtube.com/user/koenighaunstetten][YouTube channel]].
+- [[https://github.com/jethrokuan/dots/tree/master/.doom.d][Jethro Kuan's dotfiles]]
+- [[https://matthewbauer.us/bauer/][bauer: an Emacs+Nix IDE]]
+- [[https://ambrevar.xyz/emacs-everywhere/][Pierre Neidhardt: Emacs Everywhere]]
+- [[http://doc.rix.si/cce/cce.html][Ryan Rix's Complete Computing Environment (CCE)]]
+- [[https://github.com/LemonBreezes/.doom.d/blob/master/config.org][LemonBreezes' Literate Doom Config]]
+- [[https://zzamboni.org/post/my-emacs-configuration-with-commentary/][Diego Zamboni's Literate Emacs Config]]
+- [[https://justin.abrah.ms/dotfiles/emacs.html][Justin Abrahms' Literate Emacs Config]]
+
+* Table of Contents
+#+BEGIN_QUOTE
+blah blah
+#+END_QUOTE
+
+* Doom Module Declarations
+
+This file controls what Doom modules are enabled and what order they load in.
+Remember to run =doom sync= or =doom/reload=  after modifying it.
+
+#+begin_src emacs-lisp :tangle init.el
+;;; init.el -*- lexical-binding: t; -*-
+(doom! :input
+
+       :completion
+       company             ; the ultimate code completion backend
+       (ivy                ; a search engine for love and life
+        +icons             ; ... icons are pretty
+        +prescient)        ; ... I know what I want(ed)
+
+       :ui
+       doom             ; what makes DOOM look the way it does
+       doom-dashboard      ; a nifty splash screen for Emacs
+       doom-quit           ; DOOM quit-message prompts when you quit Emacs
+       ;;(emoji +unicode)  ; 🙂
+       ;;fill-column       ; a `fill-column' indicator
+       hl-todo             ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
+       ;;hydra
+       ;;indent-guides     ; highlighted indent columns
+       ;;ligatures         ; ligatures and symbols to make your code pretty again
+       modeline            ; snazzy, Atom-inspired modeline, plus API
+       nav-flash           ; blink cursor line after big motions
+       ophints             ; highlight the region an operation acts on
+       (popup +defaults)   ; tame sudden yet inevitable temporary windows
+       ;;unicode           ; extended unicode support for various languages
+       vc-gutter           ; vcs diff in the fringe
+       vi-tilde-fringe     ; fringe tildes to mark beyond EOB
+       workspaces          ; tab emulation, persistence & separate workspaces
+       ;;zen               ; distraction-free coding or writing
+
+       :editor
+       (evil +everywhere)  ; come to the dark side, we have cookies
+       file-templates      ; auto-snippets for empty files
+       fold                ; (nigh) universal code folding
+       ;;lispy             ; vim for lisp, for people who don't like vim
+       ;;multiple-cursors  ; editing in many places at once
+       snippets            ; my elves. They type so I don't have to
+       ;;word-wrap         ; soft wrapping with language-aware indent
+
+       :emacs
+       (dired +icons)    ; making dired pretty [functional]
+       electric          ; smarter, keyword-based electric-indent
+       undo              ; persistent, smarter undo for your inevitable mistakes
+       vc                ; version-control and Emacs, sitting in a tree
+
+       :term
+       ;;vterm             ; the best terminal emulation in Emacs
+
+       :checkers
+       syntax              ; tasing you for every semicolon you forget
+
+       :tools
+       ;;direnv            ; be direct about your environment
+       ;;docker            ; port everything to containers
+       (eval +overlay)     ; run code, run (also, repls)
+       lookup              ; navigate your code and its documentation
+       magit               ; a git porcelain for Emacs
+       ;;pass              ; password manager for nerds
+       ;;pdf               ; pdf enhancements
+       rgb                 ; creating color strings
+
+       :os
+       (:if IS-MAC macos)  ; improve compatibility with macOS
+
+       :lang
+       ;;agda              ; types of types of types of types...
+       ;;cc                ; C/C++/Obj-C madness
+       ;;clojure           ; java with a lisp
+       ;;common-lisp       ; if you've seen one lisp, you've seen them all
+       ;;coq               ; proofs-as-programs
+       ;;crystal           ; ruby at the speed of c
+       ;;csharp            ; unity, .NET, and mono shenanigans
+       ;;data              ; config/data formats
+       ;;(dart +flutter)   ; paint ui and not much else
+       ;;elixir            ; erlang done right
+       ;;elm               ; care for a cup of TEA?
+       emacs-lisp          ; drown in parentheses
+       ;;erlang            ; an elegant language for a more civilized age
+       ;;ess               ; emacs speaks statistics
+       ;;faust             ; dsp, but you get to keep your soul
+       ;;fsharp            ; ML stands for Microsoft's Language
+       ;;fstar             ; (dependent) types and (monadic) effects and Z3
+       ;;gdscript          ; the language you waited for
+       ;;(go +lsp)         ; the hipster dialect
+       ;;(haskell +dante)  ; a language that's lazier than I am
+       ;;hy                ; readability of scheme w/ speed of python
+       ;;idris             ; a language you can depend on
+       ;;json              ; At least it ain't XML
+       ;;(java +meghanada) ; the poster child for carpal tunnel syndrome
+       ;;javascript        ; all(hope(abandon(ye(who(enter(here))))))
+       ;;julia             ; a better, faster MATLAB
+       ;;kotlin            ; a better, slicker Java(Script)
+       ;;latex             ; writing papers in Emacs has never been so fun
+       ;;lean
+       ;;factor
+       ;;ledger            ; an accounting system in Emacs
+       ;;lua               ; one-based indices? one-based indices
+       markdown            ; writing docs for people to ignore
+       ;;nim               ; python + lisp at the speed of c
+       ;;nix               ; I hereby declare "nix geht mehr!"
+       ;;ocaml             ; an objective camel
+       (org                ; organize your plain life in plain textg
+        +roam              ; the rhizome is ever-growing
+        +journal           ; look at what i did
+        +pretty            ; yess my pretties! Nicer Unicode Symbols
+        +dragndrop         ; drag and drop images and files onto org buffers
+        +habits            ; Make haste one slow step at a time
+        ;;+pomodoro
+        )
+       ;;php               ; perl's insecure younger brother
+       ;;plantuml          ; diagrams for confusing people more
+       ;;purescript        ; javascript, but functional
+       ;;python            ; beautiful is better than ugly
+       ;;qt                ; the 'cutest' gui framework ever
+       ;;racket            ; a DSL for DSLs
+       ;;raku              ; the artist formerly known as perl6
+       ;;rest              ; Emacs as a REST client
+       ;;rst               ; ReST in peace
+       ;;(ruby +rails)     ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
+       ;;rust              ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+       ;;scala             ; java, but good
+       ;;scheme            ; a fully conniving family of lisps
+       sh                  ; she sells {ba,z,fi}sh shells on the C xor
+       ;;sml
+       ;;solidity          ; do you need a blockchain? No.
+       ;;swift             ; who asked for emoji variables?
+       ;;terra             ; Earth and Moon in alignment for performance.
+       ;;web               ; the tubes
+       ;;yaml              ; JSON, but readable
+
+       :email
+
+       :app
+       ;;calendar
+       ;;irc               ; how neckbeards socialize
+       ;;(rss +org)        ; emacs as an RSS reader
+       ;;twitter           ; twitter client https://twitter.com/vnought
+
+       :config
+       literate
+       (default +bindings +smartparens))
+#+END_SRC
+
+* Package Configuration
+:PROPERTIES:
+:header-args: :tangle config.el
+:END:
+** Header
+Set =lexical-binding= for this file.
+
+#+begin_src emacs-lisp
+;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
+#+end_src
+
+** Global Constants
+*** Contact info
+
+#+begin_src emacs-lisp
+(setq user-full-name "Jason Kinsfather"
+      user-mail-address "jasonrkinsfather@gmail")
+#+end_src
+
+*** Directories
+**** Personal
+
+#+begin_src emacs-lisp
+
+#+end_src
+
+#+RESULTS:
+
+**** Org
+
+#+begin_src emacs-lisp
+;; Set Org Directory
+(setq org-directory "~/notes/")
+;; Set Org Roam Directory
+(setq org-roam-directory "~/org-roam")
+;; Set Org Roam Dailies Directory
+(setq org-roam-dailies-directory "daily/")
+;; Set Org Capture File
+(setq org-default-notes-file "~/notes/refile.org")
+#+end_src
+
+#+RESULTS:
+
+** Load helper functions
+
+Helper Functions and Hooks are located in Doom-dir/funcs.el
+
+#+begin_src emacs-lisp
+(load-file (concat doom-private-dir "funcs.el"))
+#+end_src
+
+** Visual Settings
+
+#+begin_src emacs-lisp
+(setq doom-font (font-spec :family "Hack" :size 15)
+      doom-variable-pitch-font (font-spec :family "Libre Baskerville")
+      doom-serif-font (font-spec :family "Libre Baskerville"))
+
+(when (file-exists-p "~/.doom.d/banners")
+  (setq +doom-dashboard-banner-padding '(0 . 2)
+        +doom-dashboard-banner-file "deepfield-window.png"
+        +doom-dashboard-banner-dir "~/.doom.d/banners"))
+
+(setq display-line-numbers-type t)
+
+;; Thin grey line separating windows
+(set-face-background 'vertical-border "grey")
+(set-face-foreground 'vertical-border (face-background 'vertical-border))
+#+end_src
+
+*** Theme
+
+#+begin_src emacs-lisp
+(setq doom-theme 'doom-nord-light)
+(load-theme 'doom-nord-light t)
+#+end_src
+
+*** Startup Window
+
+Set default size of startup and new EMACS' windows.
+
+#+begin_src emacs-lisp
+(if (display-graphic-p)
+    (progn
+      (setq initial-frame-alist
+            '(
+              (tool-bar-lines . 0)
+              (width . 200) ;chars
+              (height . 82) ;lines
+              (left . 50)
+              (top . 0)))
+      (setq default-frame-alist
+            '(
+              (tool-bar-lines . 0)
+              (width . 200)
+              (height . 82)
+              (left . 50)
+              (top . 0))))
+  (progn
+    (setq initial-frame-alist '( (tool-bar-lines . 0)))
+    (setq default-frame-alist '( (tool-bar-lines . 0)))))
+
+#+end_src
+
+** Key Config
+
+#+begin_src emacs-lisp
+
+#+end_src
+
+** Org
+
+Reference: [[https://orgmode.org/manual][Org Mode Manual]]
+
+I use org as a primary interface. It currently manages:
+- My second brain with org-roam & org-journal
+- literate programming with babel and emacs-jupyter (e.g. this file)
+- tasks + calendar with org-agenda and calfw
+- Writing / blogging with ox-hugo, pandoc, etc...
+  - Has nice inline rendering of LaTeX
+- Managing references + pdfs with org-ref
+- Annotating PDFs with notes via org-noter
+
+*** General Settings
+**** Todo State Keyword Sequences
+
+Define TODO State Keywords in two separate sequences:
+1. Tasks/Project Sequence
+   - Repeat
+   - Next
+   - Todo
+   - Waiting
+   - Someday
+   - Project
+    -----------
+   - Done
+   - Cancelleds
+
+2. Goal Sequence
+   This Sequence is used to track 'Destination' goals. These are goals that, like visiting a destination, have either been done or not. 'Journey' goals, which are reoccurring and build up over time, should be tracked using the habits module.
+   - Goal
+    ----------
+   - Achieved
+   - Missed
+
+States with the @ symbol will create a timestamp when todo enters the state.
+States with the ! symbol will take a note when assgned
+If the @ or ! symbol is preceded by a / then the timestamp or note will be created when leaving that state.
+
+#+begin_src emacs-lisp
+(setq org-todo-keywords
+    '((sequence "REPEAT(r)" "NEXT(n@/!)" "TODO(t@/!)" "WAITING (w@/!)" "SOMEDAY(s@/!)" "PROJ(p)" "|" "DONE(d@)" "CANCELLED(c@)")
+      (sequence "GOAL(G)" "|" "ACHIEVED(a@)" "MISSED(m@)")))
+#+end_src
+
+**** Todo Completion Timestamp
+
+Record timestamp when a todo is completed
+
+#+begin_src emacs-lisp
+(setq org-log-done 'time)
+#+end_src
+
+**** Todo Logging
+
+All logging made on a todo will be submitted to it's LOGBOOK drawer.
+
+#+begin_src emacs-lisp
+(setq org-log-into-drawer t)s
+#+end_src
+
+**** Tag Definition
+
+Not sure what I want to use tags for quite yet. Common tactic seems to be site of taskwork so that you can group tasks by their location and knock related ones out at one time.
+
+*** Super Agenda
+
+Reference: [[https://github.com/alphapapa/org-super-agenda][Org-Super-Agenda]]
+
+org-super-agenda allows me to easily group weekly or daily agenda items by state, tags, category, priority, habit, deadlines, date, etc.
+
+#+BEGIN_SRC emacs-lisp
+(use-package! org-super-agenda
+    :commands (org-super-agenda-mode))
+
+(after! org-agenda
+  (org-super-agenda-mode))
+#+END_SRC
+
+**** General Settings
+
+#+BEGIN_SRC emacs-lisp
+(setq org-agenda-skip-scheduled-if-done t
+      org-agenda-skip-deadline-if-done t
+      org-agenda-include-deadlines t
+      org-agenda-block-separator nil
+      org-agenda-tags-column 100 ;; from testing this seems to be a good value
+      org-agenda-compact-blocks t)
+#+END_SRC
+
+**** Agenda Groups
+
+TODO: Define Super Agenda Groups
+
+#+BEGIN_SRC emacs-lisp
+(setq org-agenda-custom-commands
+      '(("o" "Overview"
+         ((agenda "" ((org-agenda-span 'day)
+                      (org-super-agenda-groups
+                       '((:name "Today"
+                          :time-grid t
+                          :date today
+                          :todo "TODAY"
+                          :scheduled today
+                          :order 1)))))
+          (alltodo "" ((org-agenda-overriding-header "")
+                       (org-super-agenda-groups
+                        '((:name "Next to do"
+                           :todo "NEXT"
+                           :order 1)
+                          (:name "Important"
+                           :tag "Important"
+                           :priority "A"
+                           :order 6)
+                          (:name "Due Today"
+                           :deadline today
+                           :order 2)
+                          (:name "Due Soon"
+                           :deadline future
+                           :order 8)
+                          (:name "Overdue"
+                           :deadline past
+                           :face error
+                           :order 7)
+                          (:name "Assignments"
+                           :tag "Assignment"
+                           :order 10)
+                          (:name "Issues"
+                           :tag "Issue"
+                           :order 12)
+                          (:name "Emacs"
+                           :tag "Emacs"
+                           :order 13)
+                          (:name "Projects"
+                           :tag "Project"
+                           :order 14)
+                          (:name "Research"
+                           :tag "Research"
+                           :order 15)
+                          (:name "To read"
+                           :tag "Read"
+                           :order 30)
+                          (:name "Waiting"
+                           :todo "WAITING"
+                           :order 20)
+                          (:name "Trivial"
+                           :priority<= "E"
+                           :tag ("Trivial" "Unimportant")
+                           :todo ("SOMEDAY" )
+                           :order 90)
+                          (:discard (:tag ("Chore" "Routine" "Daily")))))))))))
+
+#+end_src
+
+*** Org-Capture
+  Let's make the agenda look nicer
+
+#+BEGIN_SRC emacs-lisp :tangle no :noweb-ref prettify-capture
+(defun org-capture-select-template-prettier (&optional keys)
+  "Select a capture template, in a prettier way than default Lisp programs can force the template by setting KEYS to a string."
+  (let ((org-capture-templates
+         (or (org-contextualize-keys
+              (org-capture-upgrade-templates org-capture-templates)
+              org-capture-templates-contexts)
+             '(("t" "Task" entry (file+headline "" "Tasks")
+                "* TODO %?\n  %u\n  %a")))))
+    (if keys
+        (or (assoc keys org-capture-templates)
+            (error "No capture template referred to by \"%s\" keys" keys))
+      (org-mks org-capture-templates
+               "Select a capture template\n━━━━━━━━━━━━━━━━━━━━━━━━━"
+               "Template key: "
+               `(("q" ,(concat (all-the-icons-octicon "stop" :face 'all-the-icons-red :v-adjust 0.01) "\tAbort")))))))
+(advice-add 'org-capture-select-template :override #'org-capture-select-template-prettier)
+
+(defun org-mks-pretty (table title &optional prompt specials)
+  "Select a member of an alist with multiple keys. Prettified.
+
+TABLE is the alist which should contain entries where the car is a string.
+There should be two types of entries.
+
+1. prefix descriptions like (\"a\" \"Description\")
+   This indicates that `a' is a prefix key for multi-letter selection, and
+   that there are entries following with keys like \"ab\", \"ax\"…
+
+2. Select-able members must have more than two elements, with the first
+   being the string of keys that lead to selecting it, and the second a
+   short description string of the item.
+
+The command will then make a temporary buffer listing all entries
+that can be selected with a single key, and all the single key
+prefixes.  When you press the key for a single-letter entry, it is selected.
+When you press a prefix key, the commands (and maybe further prefixes)
+under this key will be shown and offered for selection.
+
+TITLE will be placed over the selection in the temporary buffer,
+PROMPT will be used when prompting for a key.  SPECIALS is an
+alist with (\"key\" \"description\") entries.  When one of these
+is selected, only the bare key is returned."
+  (save-window-excursion
+    (let ((inhibit-quit t)
+          (buffer (org-switch-to-buffer-other-window "*Org Select*"))
+          (prompt (or prompt "Select: "))
+          case-fold-search
+          current)
+      (unwind-protect
+          (catch 'exit
+            (while t
+              (setq-local evil-normal-state-cursor (list nil))
+              (erase-buffer)
+              (insert title "\n\n")
+              (let ((des-keys nil)
+                    (allowed-keys '("\C-g"))
+                    (tab-alternatives '("\s" "\t" "\r"))
+                    (cursor-type nil))
+                ;; Populate allowed keys and descriptions keys
+                ;; available with CURRENT selector.
+                (let ((re (format "\\`%s\\(.\\)\\'"
+                                  (if current (regexp-quote current) "")))
+                      (prefix (if current (concat current " ") "")))
+                  (dolist (entry table)
+                    (pcase entry
+                      ;; Description.
+                      (`(,(and key (pred (string-match re))) ,desc)
+                       (let ((k (match-string 1 key)))
+                         (push k des-keys)
+                         ;; Keys ending in tab, space or RET are equivalent.
+                         (if (member k tab-alternatives)
+                             (push "\t" allowed-keys)
+                           (push k allowed-keys))
+                         (insert (propertize prefix 'face 'font-lock-comment-face) (propertize k 'face 'bold) (propertize "›" 'face 'font-lock-comment-face) "  " desc "…" "\n")))
+                      ;; Usable entry.
+                      (`(,(and key (pred (string-match re))) ,desc . ,_)
+                       (let ((k (match-string 1 key)))
+                         (insert (propertize prefix 'face 'font-lock-comment-face) (propertize k 'face 'bold) "   " desc "\n")
+                         (push k allowed-keys)))
+                      (_ nil))))
+                ;; Insert special entries, if any.
+                (when specials
+                  (insert "─────────────────────────\n")
+                  (pcase-dolist (`(,key ,description) specials)
+                    (insert (format "%s   %s\n" (propertize key 'face '(bold all-the-icons-red)) description))
+                    (push key allowed-keys)))
+                ;; Display UI and let user select an entry or
+                ;; a sub-level prefix.
+                (goto-char (point-min))
+                (unless (pos-visible-in-window-p (point-max))
+                  (org-fit-window-to-buffer))
+                (let ((pressed (org--mks-read-key allowed-keys prompt)))
+                  (setq current (concat current pressed))
+                  (cond
+                   ((equal pressed "\C-g") (user-error "Abort"))
+                   ;; Selection is a prefix: open a new menu.
+                   ((member pressed des-keys))
+                   ;; Selection matches an association: return it.
+                   ((let ((entry (assoc current table)))
+                      (and entry (throw 'exit entry))))
+                   ;; Selection matches a special entry: return the
+                   ;; selection prefix.
+                   ((assoc current specials) (throw 'exit current))
+                   (t (error "No entry available")))))))
+        (when buffer (kill-buffer buffer))))))
+(advice-add 'org-mks :override #'org-mks-pretty)
+#+END_SRC
+
+*** org-journal: Managing daily journal file
+
+#+BEGIN_SRC emacs-lisp
+(use-package! org-journal
+  :after org
+  :config
+  (customize-set-variable 'org-journal-dir (concat org-roam-directory "journal"))
+  (customize-set-variable 'org-journal-file-format "private-%Y-%m-%d.org")
+  (customize-set-variable 'org-journal-date-prefix "#+TITLE: ")
+  (customize-set-variable 'org-journal-time-prefix "* ")
+  (customize-set-variable 'org-journal-time-format "")
+  (customize-set-variable 'org-journal-carryover-items "TODO=\"TODO\"")
+  (customize-set-variable 'org-journal-date-format "%Y-%m-%d")
+  (map! :leader
+        (:prefix-map ("n" . "notes")
+          (:prefix ("j" . "journal")
+            :desc "Today" "t" #'org-journal-today )))
+  (defun org-journal-today ()
+    (interactive)
+    (org-journal-new-entry t)))
+
+#+END_SRC
+Set Org capture templates using Declarative ORG Capture Templates
+#+begin_src emacs-lisp :noweb no-export
+(use-package! doct
+  :commands (doct))
+
+(after! org-capture
+  <<prettify-capture>>
+  (setq +org-capture-recipes (concat (file-name-as-directory org-directory) "cook.org"))
+
+  (defun +doct-icon-declaration-to-icon (declaration)
+    "Convert :icon declaration to icon"
+    (let ((name (pop declaration))
+          (set  (intern (concat "all-the-icons-" (plist-get declaration :set))))
+          (face (intern (concat "all-the-icons-" (plist-get declaration :color))))
+          (v-adjust (or (plist-get declaration :v-adjust) 0.01)))
+     (apply set `(,name :face ,face :v-adjust ,v-adjust))))
+
+  (defun +doct-iconify-capture-templates (groups)
+    "Add declaration's :icon to each template group in GROUPS."
+    (let ((templates (doct-flatten-lists-in groups)))
+     (setq doct-templates (mapcar (lambda (template)
+                                     (when-let* ((props (nthcdr (if (= (length template) 4) 2 5) template))
+                                                 (spec (plist-get (plist-get props :doct) :icon)))
+                                      (setf (nth 1 template) (concat (+doct-icon-declaration-to-icon spec)
+                                                                      "\t"
+                                                                      (nth 1 template))))
+                                     template)
+                                   templates))))
+
+  (setq doct-after-conversion-functions '(+doct-iconify-capture-templates))
+
+  (defun set-org-capture-templates ()
+    (setq org-capture-templates
+      (doct `(("Personal Todo"
+               :keys "t"
+               :icon ("checklist" :set "octicon" :color "green")
+               :file +org-capture-todo-file
+               :prepend t
+               :headline "Inbox"
+               :type entry
+               :template ("* TODO %?\n%U\n%a\n"))
+              ("Personal Note"
+               :keys "n"
+               :icon ("sticky-note-o" :set "faicon" :color "green")
+               :file +org-capture-todo-file
+               :prepend t
+               :headline "Inbox"
+               :type entry
+               :template ("* %?" "%i %a"))
+              ("Email"
+               :keys "e"
+               :icon ("envelope" :set "faicon" :color "blue")
+               :file +org-capture-todo-file
+               :prepend t
+               :headline "Inbox"
+               :type entry
+               :template ("* TODO %^{type|reply to|contact} %\\3 %? :email:"
+                        "Send an email %^{urgancy|soon|ASAP|anon|at some point|eventually} to %^{recipiant}"
+                        "about %^{topic}"
+                        "%U %i %a"))
+               ("Interesting"
+                :keys "i"
+                :icon ("eye" :set "faicon" :color "lcyan")
+                :file +org-capture-todo-file
+                :prepend t
+                :headline "Interesting"
+                :type entry
+                :template ("* [ ] %{desc}%? :%{i-type}:" "%i %a")
+                :children (("Webpage"
+                           :keys "w"
+                           :icon ("globe" :set "faicon" :color "green")
+                           :desc "%(org-cliplink-capture) "
+                           :i-type "read:web")
+                          ("Article"
+                           :keys "a"
+                           :icon ("file-text" :set "octicon" :color "yellow")
+                           :desc ""
+                           :i-type "read:research")
+                          ("Cooking"
+                           :keys "c"
+                           :icon ("spoon" :set "faicon" :color "dorange")
+                           :file +org-capture-recipes
+                           :headline "Unsorted"
+                           :template "%(org-chef-get-recipe-from-url)")
+                          ("Information"
+                           :keys "i"
+                           :icon ("info-circle" :set "faicon" :color "blue")
+                           :desc ""
+                           :i-type "read:info")
+                          ("Idea"
+                           :keys "I"
+                           :icon ("bubble_chart" :set "material" :color "silver")
+                           :desc ""
+                           :i-type "idea")))
+               ("Tasks"
+                :keys "k"
+                :icon ("inbox" :set "octicon" :color "yellow")
+                :file +org-capture-todo-file
+                :prepend t
+                :headline "Tasks"
+                :type entry
+                :template ("* TODO %? %^G%{extra}" "%i %a")
+                :children (("General Tasks"
+                            :keys "k"
+                            :icon ("inbox" :set "octicon" :color "yellow")
+                            :extra "")
+                           ("Task with deadline"
+                            :keys "d"
+                            :icon ("timer" :set "material" :color "orange" :v-adjust -0.1)
+                            :extra "\nDEADLINE: %^{Deadline:}t")
+                           ("Scheduled Task"
+                            :keys "s"
+                            :icon ("calendar" :set "octicon" :color "orange")
+                            :extra "\nSCHEDULED: %^{Start time:}t")))
+               ("Project"
+                :keys "p"
+                :icon ("repo" :set "octicon" :color "silver")
+                :prepend t
+                :type entry
+                :headline "Inbox"
+                :template ("* %{time-or-todo} %?" "%i" "%a")
+                :file ""
+                :custom (:time-or-todo "")
+                :children (("Project-local todo"
+                            :keys "t"
+                            :icon ("checklist" :set "octicon" :color "green")
+                            :time-or-todo "TODO"
+                            :file +org-capture-project-notes-file)
+                           ("Project-local note"
+                            :keys "n"
+                            :icon ("sticky-note" :set "faicon" :color "yellow")
+                            :time-or-todo "%U"
+                            :file +org-capture-project-notes-file)
+                           ("Project-local changelog"
+                            :keys "c"
+                            :icon ("sticky-note" :set "faicon" :color"yellow")
+                            :time-or-todo "%U"
+                            :heading "Unreleased"
+                            :file +org-capture-project-changelog-file)))
+               ("\tCentralised project templates"
+                :keys "o"
+                :type entry
+                :prepend t
+                :template ("* %{time-or-todo} %?" "%i" "%a")
+                :children (("Project todo"
+                            :keys "t"
+                            :prepend nil
+                            :time-or-todo "TODO"
+                            :heading "Tasks"
+                            :file +org-capture-central-project-todo-file)
+                           ("Project note"
+                            :keys "n"
+                            :time-or-todo "%U"
+                            :heading "Notes"
+                            :file +org-capture-central-project-notes-file)
+                           ("Project changelog"
+                            :keys "c"
+                            :time-or-todo "%U"
+                            :heading "Unreleased"
+                            :file +org-capture-central-project-changelog-file)))))))
+
+  (set-org-capture-templates)
+  (unless (display-graphic-p)
+    (add-hook 'server-after-make-frame-hook
+              (defun org-capture-reinitialize-hook ()
+                (when(display-graphic-p)
+                  (set-org-capture-templates)
+                  (remove-hook 'server-after-make-frame-hook
+                               #'org-capture-reinitialize-hook
+                               ))))))
+#+END_SRC
+
+#+RESULTS:
+| sequence | TODO(t)    | In-Progress(p) |         |   | DONE(d) |              |
+| sequence | WAITING(w) | BLOCKED(b)     | HOLD(h) |   |         | CANCELLED(c) |
+
+
+
+*** org-roam: A Zettelkasten based on RoamResearch
+
+Setting the keybindings for basic Org Roam functionality.
+
+#+begin_src emacs-lisp
+(use-package! org-roam
+  :commands (org-roam-insert org-roam-find-file org-roam-switch-to-buffer org-roam)
+  :hook
+  (org-mode . org-roam-mode)
+  :custom-face
+  (org-roam-link ((t (:inherit org-link))))
+  :init
+  (require 'org-roam-protocol)
+  (map! :leader
+        :prefix "n"
+        :desc "org-roam" "l" #'org-roam
+        :desc "org-roam-insert" "i" #'org-roam-insert
+        :desc "org-roam-switch-to-buffer" "b" #'org-roam-switch-to-buffer
+        :desc "org-roam-find-file" "f" #'org-roam-find-file
+        :desc "org-roam-show-graph" "g" #'org-roam-show-graph
+        :desc "org-roam-capture" "c" #'org-roam-capture ))
+#+end_src
+
+**** Capture Templates
+***** Fix Default
+
+This is used when new files in org-roam are created. The default doesn't have =:immediate-finish= set, which makes an annoying empty file buffer pop-up any time a new entity is created in org-roam. Setting it here smooths out the experience.
+
+Ref: https://github.com/jethrokuan/org-roam/issues/361#issuecomment-604955973
+
+#+begin_src emacs-lisp
+(setq org-roam-capture-templates
+      '(("d" "default" plain (function org-roam--capture-get-point)
+         "%?"
+         :file-name "%<%Y%m%d%H%M%S>-${slug}"
+         :head "#+TITLE: ${title}\n"
+         :unnarrowed t
+         :immediate-finish t)))
+#+end_src
+
+***** TODOs + org-agenda integration
+
+In real Roam, TODO tags can be conveniently interspersed in any file. Then, filtering backlinks on the TODO page is the agenda view.
+
+Unfortunately, this workflow doesn't work for org-roam, since org-agenda is implemented too ineffeciently to handle thousands of agenda files.
+
+My fix, as recommended [[https://github.com/org-roam/org-roam/issues/144#issuecomment-592726052][here]], is to put capture todos to a single file, but auto-insert links back to the context of the todo. Then, any TODOs for a page should be visible in the backlinks of that page. This is an inversion of the setup available in Roam.
+/
+The =org-capture-templates= templates used here:
+
+| Template | Doc                          |
+|----------+------------------------------|
+| %?       | Initial cursor position      |
+| %F       | File path of original buffer |
+| %i       | Body                         |
+| %a       | Link back to context         |
+
+
+#+begin_src emacs-lisp
+(after! org-roam
+  (setq my/org-roam-files (directory-files org-roam-directory  t ".*.org"))
+  (setq my/org-roam-todo-file (concat org-roam-directory "todo.org"))
+  (setq org-refile-targets `((,(append (my/open-org-files-list) (directory-files org-directory  t ".*.org")) :maxlevel . 7)))
+  (setq org-agenda-files `(,my/org-roam-todo-file))
+
+  (defun my/org-roam-get-title (path)
+    (save-window-excursion
+      ;; A simple find-file didn't work when the original was narrowed
+      (with-temp-buffer
+        (insert-file-contents path)
+        (org-mode)
+        (car (org-roam--extract-titles-title)))))
+
+  (add-to-list 'org-capture-templates '("r" "org-roam todo" entry (file my/org-roam-todo-file)
+                                        "* TODO %?  #[[%F][%(my/org-roam-get-title \"%F\")]]\n%i\n%a")))
+#+end_src
+
+**** Org-Roam Dailies
+
+Set Dailies Keybindings to find SPC m f and capture SPC n c daily files.
+
+#+begin_src emacs-lisp
+(after! org-roam
+  (map! :leader
+        :prefix ("m" . "Roam Dailies")
+        (:prefix ("f" . "Find Daily File")
+          :desc "Find Today's Daily" "t" #'org-roam-dailies-find-today
+          :desc "Find Yesterday's Daily" "y" #'org-roam-dailies-find-yesterday
+          :desc "Find Daily on Date" "d" #'org-roam-dailies-find-date )
+        (:prefix ("c" . "Capture Daily File")
+          :desc "Capture Today's Daily" "t" #'org-roam-dailies-capture-today
+          :desc "Capture Yesterday's Daily" "y" #'org-roam-dailies-capture-yesterday
+          :desc "Capture Daily on Date" "d" #'org-roam-dailies-capture-date )))
+
+#+end_src
+
+Configure the capture template for org roam dailies.
+
+#+begin_src emacs-lisp
+(setq org-roam-dailies-capture-templates
+      '(("j" "journal" entry
+        #'org-roam-capture--get-point
+        "* %?"
+        :file-name "daily/%<%Y-%m-%d>"
+        :head "#+title: %<%Y-%m-%d>\n"
+        :olp ("My Journal"))))
+#+end_src
+
+*** org-download: Inserting images into org-mode
+
+#+begin_src emacs-lisp
+(use-package! org-download
+  :config
+  ;; take an image that is already on the clipboard
+  (customize-set-variable 'org-download-screenshot-method "xclip -selection clipboard -t image/png -o > %s"))
+#+end_src
+
+*** org-cliplink: Better external links
+
+Automatically pulls the titles from pages from a URL, then inserts a corresponding org-link.
+
+#+begin_src emacs-lisp
+(use-package! org-cliplink)
+#+end_src
+
+
+
+** Effective Editing
+*** Structure Editing
+
+#+BEGIN_SRC emacs-lisp
+(use-package! aggressive-indent
+  :hook
+  (emacs-lisp-mode . aggressive-indent-mode)
+  (common-lisp-mode . aggressive-indent-mode))
+#+END_SRC
+
+*** Multiple Cursors
+
+#+BEGIN_SRC emacs-lisp
+(use-package! multiple-cursors
+              :init
+              (setq mc/always-run-for-all t)
+              :config
+              (add-to-list 'mc/unsupported-minor-modes 'lispy-mode)
+              :bind (("C-S-c" . mc/edit-lines)
+                     ("C-M-g" . mc/mark-all-like-this-dwim)
+                     ("C->" . mc/mark-next-like-this)
+                     ("C-<" . mc/mark-previous-like-this)
+                     ("C-)" . mc/skip-to-next-like-this)
+                     ("C-M->" . mc/skip-to-next-like-this)
+                     ("C-(" . mc/skip-to-previous-like-this)
+                     ("C-M-<" . mc/skip-to-previous-like-this)))
+
+#+END_SRC
+
+** Ivy
+
+Ivy allows you to find the input to a command by incrementally searching the
+space of all valid inputs. It's well-supported in Doom.
+
+#+BEGIN_SRC emacs-lisp
+(after! ivy
+  ;; Causes open buffers and recentf to be combined in ivy-switch-buffer
+  (setq ivy-use-virtual-buffers t
+        counsel-find-file-at-point t
+        ivy-wrap nil
+        ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-top-center))
+        ivy-posframe-height-alist '((t . 20))
+        ivy-posframe-parameters '((internal-border-width . 1))
+        ivy-posframe-width 100)
+  (add-hook 'eshell-mode-hook
+            (lambda ()
+              (eshell-cmpl-initialize)
+              (define-key eshell-mode-map (kbd "M-r") 'counsel-esh-history))))
+
+#+END_SRC
+
+** Dired
+
+#+BEGIN_SRC emacs-lisp
+(after! dired
+  (setq dired-listing-switches "-aBhl  --group-directories-first"
+        dired-dwim-target t
+        dired-recursive-copies (quote always)
+        dired-recursive-deletes (quote top)
+        ;; Directly edit permisison bits!
+        wdired-allow-to-change-permissions t
+        dired-omit-mode nil))
+
+(use-package! dired-narrow
+              :commands (dired-narrow-fuzzy)
+              :init
+              (map! :map dired-mode-map
+                    :desc "narrow" "/" #'dired-narrow-fuzzy))
+
+;; Directly edit permisison bits!
+(setq wdired-allow-to-change-permissions t)
+#+END_SRC
+
+** Search Utilities
+
+*** Magit
+
+Stunningly useful.
+
+#+BEGIN_SRC emacs-lisp
+(use-package! magit
+  :config
+  (set-default 'magit-stage-all-confirm nil)
+  (set-default 'magit-unstage-all-confirm nil)
+
+  (remove-hook 'magit-mode-hook 'turn-on-magit-gitflow)
+
+  ;; Restores "normal" behavior in branch view (when hitting RET)
+  (setq magit-visit-ref-behavior '(create-branch checkout-any focus-on-ref))
+
+  (setq git-commit-finish-query-functions nil)
+  (setq magit-visit-ref-create 1)
+  (setq magit-revision-show-gravatars nil))
+
+(after! (magit key-chord)
+  (add-to-sl-keymap
+   '(("k" . magit-dispatch-popup)
+     ("s" . magit-status)
+     ("o" . magit-log)
+     ("u" . magit-submodule-update)
+     ("l" . magit-show-refs-head))))
+#+END_SRC
+
+** Autosave
+
+#+begin_src emacs-lisp
+(use-package! real-auto-save
+  :hook
+  (prog-mode . real-auto-save-mode)
+  (org-mode . real-auto-save-mode))
+#+end_src
+
+** Performance Tweaks
+
+
+** Misc Keybindings
+
+#+BEGIN_SRC emacs-lisp
+
+#+END_SRC
+
+** Misc
+
+#+begin_src emacs-lisp
+(flycheck-mode 0)
+
+(setq direnv-always-show-summary nil)
+
+(add-to-list 'auto-mode-alist '("\\.eps\\'" . doc-view-minor-mode))
+
+;; all backup and autosave files in the tmp dir
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
+;; Coordinate between kill ring and system clipboard
+(setq save-interprogram-paste-before-kill t)
+
+(setq eshell-history-file-name (concat doom-private-dir "eshell-history"))
+
+;; This is dangerous, but reduces the annoying step of confirming local variable settings each time
+;; a file with a "Local Variables" clause (like many Org files) is opened.
+(setq enable-local-variables :all)
+
+;; This is usually just annoying
+(setq compilation-ask-about-save nil)
+
+;; No confirm on exit
+(setq confirm-kill-emacs nil)
+
+
+;; Help out Projectile for remote files via TRAMP
+;; https://sideshowcoder.com/2017/10/24/projectile-and-tramp/
+(defadvice projectile-on (around exlude-tramp activate)
+  "This should disable projectile when visiting a remote file"
+  (unless  (--any? (and it (file-remote-p it))
+                   (list
+                    (buffer-file-name)
+                    list-buffers-directory
+                    default-directory
+                    dired-directory))
+    ad-do-it))
+
+(setq projectile-mode-line "Projectile")
+
+(setq password-store-password-length 20)
+
+;; Truncate compiilation buffers, otherwise Emacs gets slow
+;; https://stackoverflow.com/questions/11239201/can-i-limit-the-length-of-the-compilation-buffer-in-emacs
+(add-hook 'compilation-filter-hook 'comint-truncate-buffer)
+(setq comint-buffer-maximum-size 2000)
+
+(setq recentf-max-saved-items 10000)
+#+end_src
+
+#+RESULTS:
+: t
+
+* Utility functions.
+:PROPERTIES:
+:header-args: :tangle funcs.el
+:END:
+
+Hook that tangles all files within the literate program when the program file is saved.
+
+#+begin_src emacs-lisp
+;;; ~/.doom.d/funcs.el -*- lexical-binding: t; -*-
+(add-hook 'org-mode-hook
+          (lambda () (add-hook 'after-save-hook #'org-babel-tangle :append :local)))
+#+end_src
+
+#+RESULTS:
+| (lambda nil (add-hook 'after-save-hook #'org-babel-tang :append :local)) | er/add-org-mode-expansions | +lookup--init-org-mode-handlers-h | (closure (t) (&rest _) (add-hook 'before-save-hook 'org-encrypt-entries nil t)) | doom--setq-gcmh-high-cons-threshold-for-org-mode-h | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | doom-disable-show-paren-mode-h | doom-disable-show-trailing-whitespace-h | +org-enable-auto-reformat-tables-h | +org-enable-auto-update-cookies-h | +org-make-last-point-visible-h | evil-org-mode | toc-org-enable | embrace-org-mode-hook | org-eldoc-load |
+
+Function to quickly open emacs literate config file.
+
+#+begin_src emacs-lisp
+
+(defun my/open-literate-private-config-file ()
+  "Open the private config.org file."
+  (interactive)
+  (find-file (expand-file-name "config.org" doom-private-dir)))
+#+end_src
+
+Lists filenames of org files with buffers on them.
+
+#+begin_src emacs-lisp
+(defun my/open-org-files-list ()
+  (delq nil
+        (mapcar (lambda (buffer)
+                  (buffer-file-name buffer))
+                (org-buffer-list 'files t))))
+#+end_src
+* Package declarations
+
+Any desired package not declared in a Doom module must be declared here. This seems redundant given the corresponding =use-package!= declarations, but required by Doom (presumably for lazy loading).
+
+#+begin_src emacs-lisp :tangle packages.el
+;; -*- no-byte-compile: t; -*-
+;;; $DOOMDIR/packages.el
+(package! real-auto-save)
+(package! aggressive-indent)
+(package! org-super-agenda :pin "f5e80e4d0d...")
+(package! doct
+  :recipe (:host github :repo "progfolio/doct")
+  :pin "a795fa4eaf...")
+#+end_src
+
+#+RESULTS:
+| doct | :modules | ((:private . config) (:private . modules)) | :recipe | (:host github :repo progfolio/doct) | :pin | a795fa4eaf... |
