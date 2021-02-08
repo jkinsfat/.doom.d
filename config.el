@@ -3,7 +3,8 @@
 (setq user-full-name "Jason Kinsfather"
       user-mail-address "jasonrkinsfather@gmail")
 
-
+(setq my/main-contact-file "~/org/personal/contacts.org"
+      my/contact-files (list my/main-contact-file))
 
 ;; Set Org Directory
 (setq org-directory "~/notes/")
@@ -62,7 +63,7 @@
 
 (setq org-log-done 'time)
 
-(setq org-log-into-drawer t)s
+(setq org-log-into-drawer t)
 
 (use-package! org-super-agenda
     :commands (org-super-agenda-mode))
@@ -246,7 +247,7 @@
                   (goto-char (point-min))
                   (unless (pos-visible-in-window-p (point-max))
                     (org-fit-window-to-buffer))
-                  (let ((pressed (org--mks-read-key allowed-keys prompt)))
+                  (let ((pressed (org--mks-read-key allowed-keys prompt t)))
                     (setq current (concat current pressed))
                     (cond
                      ((equal pressed "\C-g") (user-error "Abort"))
@@ -287,7 +288,35 @@
 
   (defun set-org-capture-templates ()
     (setq org-capture-templates
-      (doct `(("Personal Todo"
+      (doct `(("Contact"
+               :keys "c"
+               :icon ("account_box" :set "material" :color "blue")
+               :file my/main-contact-file
+               :prepend t
+               :template ("* %(org-contacts-template-name)"
+                          ":PROPERTIES:"
+                          ":ADDRESS: %^{289 Cleveland St. Brooklyn, 11206 NY, USA}"
+                          ":BIRTHDAY: %^{yyyy-mm-dd}"
+                          ":EMAIL: %(org-contacts-template-email)"
+                          ":NOTE: %^{NOTE}"
+                          ":END:")
+               :children (("Chosen Family"
+                           :keys "c"
+                           :icon ("favorite" :set "material"  :color "purple")
+                           :headline "Chosen Family")
+                          ("Blood Family"
+                           :keys "b"
+                           :icon ("invert_colors" :set "material" :color "red")
+                           :headline "Blood Family")
+                          ("Work"
+                           :keys "w"
+                           :icon ("work" :set "material" :color "brown")
+                           :headline "Work")
+                          ("Acquaintance"
+                           :keys "a"
+                           :icon ("pan_tool" :set "material" :color "green")
+                           :headline "Acquaintance")))
+              ("Personal Todo"
                :keys "t"
                :icon ("checklist" :set "octicon" :color "green")
                :file +org-capture-todo-file
@@ -311,9 +340,9 @@
                :headline "Inbox"
                :type entry
                :template ("* TODO %^{type|reply to|contact} %\\3 %? :email:"
-                        "Send an email %^{urgancy|soon|ASAP|anon|at some point|eventually} to %^{recipiant}"
-                        "about %^{topic}"
-                        "%U %i %a"))
+                          "Send an email %^{urgancy|soon|ASAP|anon|at some point|eventually} to %^{recipiant}"
+                          "about %^{topic}"
+                          "%U %i %a"))
                ("Interesting"
                 :keys "i"
                 :icon ("eye" :set "faicon" :color "lcyan")
@@ -486,6 +515,11 @@
         :file-name "daily/%<%Y-%m-%d>"
         :head "#+title: %<%Y-%m-%d>\n"
         :olp ("My Journal"))))
+
+(use-package org-contacts
+  :ensure nil
+  :after org
+  :custom (org-contacts my/contact-files))
 
 (use-package! toc-org
   :hook (org-mode . toc-org-mode))

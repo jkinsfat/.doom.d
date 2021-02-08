@@ -31,19 +31,21 @@
     - [[#startup-window][Startup Window]]
   - [[#key-config][Key Config]]
   - [[#org-1][Org]]
-    - [[#general-settings][General Settings]]
+    - [[#todo][Todo]]
       - [[#state-keyword-sequences][State Keyword Sequences]]
       - [[#completion-timestamp][Completion Timestamp]]
       - [[#logging][Logging]]
-      - [[#tag-definition][Tag Definition]]
+    - [[#tags][Tags]]
     - [[#super-agenda][Super Agenda]]
-      - [[#general-settings-1][General Settings]]
+      - [[#general-settings][General Settings]]
       - [[#agenda-groups][Agenda Groups]]
     - [[#org-capture][Org-Capture]]
     - [[#org-journal-managing-daily-journal-file][org-journal: Managing daily journal file]]
-    - [[#org-roam-a-zettelkasten-based-on-roamresearch][org-roam: A Zettelkasten based on RoamResearch]]
+    - [[#org-roam][Org-Roam]]
+      - [[#keybindings][Keybindings]]
       - [[#capture-templates][Capture Templates]]
       - [[#org-roam-dailies][Org-Roam Dailies]]
+    - [[#contacts][Contacts]]
     - [[#table-of-contents][Table-Of-Contents]]
     - [[#org-download-inserting-images-into-org-mode][org-download: Inserting images into org-mode]]
     - [[#org-cliplink-better-external-links][org-cliplink: Better external links]]
@@ -59,6 +61,9 @@
   - [[#misc-keybindings][Misc Keybindings]]
   - [[#misc][Misc]]
 - [[#utility-functions][Utility functions.]]
+  - [[#tangle-on-save][Tangle On Save]]
+  - [[#open-literate-config][Open Literate Config]]
+  - [[#list-org-buffers][List Org Buffers]]
 - [[#package-declarations][Package declarations]]
 #+END_QUOTE
 
@@ -232,11 +237,12 @@ Set =lexical-binding= for this file.
 *** Directories
 **** Personal
 
+Contact File List
+
 #+begin_src emacs-lisp
-
+(setq my/main-contact-file "~/org/personal/contacts.org"
+      my/contact-files (list my/main-contact-file))
 #+end_src
-
-#+RESULTS:
 
 **** Org
 
@@ -333,8 +339,8 @@ I use org as a primary interface. It currently manages:
 - Managing references + pdfs with org-ref
 - Annotating PDFs with notes via org-noter
 
-*** General Settings
-**** Todo State Keyword Sequences
+*** Todo
+**** State Keyword Sequences
 
 Define TODO State Keywords in two separate sequences:
 1. Tasks/Project Sequence
@@ -365,7 +371,7 @@ If the @ or ! symbol is preceded by a / then the timestamp or note will be creat
       (sequence "GOAL(G)" "|" "ACHIEVED(a@)" "MISSED(m@)")))
 #+end_src
 
-**** Todo Completion Timestamp
+**** Completion Timestamp
 
 Record timestamp when a todo is completed
 
@@ -373,16 +379,29 @@ Record timestamp when a todo is completed
 (setq org-log-done 'time)
 #+end_src
 
-**** Todo Logging
+**** Logging
 
 All logging made on a todo will be submitted to it's LOGBOOK drawer.
 
 #+begin_src emacs-lisp
-(setq org-log-into-drawer t)s
+(setq org-log-into-drawer t)
 #+end_src
 
-**** Tag Definition
+*** Tags
 
+Communication Tag Group
+#+begin_src emacs-lisp :results value drawer :tangle no
+(defun my/group-tags (tag-list)
+  '((:startgroup . nil)
+    tag-list
+    (:endgroup . nil)))
+
+(my/group-tags '(("phone" . ?p) ("email" . ?e) ("chat" . ?) ("snailmail" . ?s)))
+#+end_src
+#+RESULTS:
+:results:
+((phone . 112) (email . 101) (chat . 99) (snailmail . 115))
+:end:
 Not sure what I want to use tags for quite yet. Common tactic seems to be site of taskwork so that you can group tasks by their location and knock related ones out at one time.
 
 *** Super Agenda
@@ -568,7 +587,7 @@ is selected, only the bare key is returned."
                 (goto-char (point-min))
                 (unless (pos-visible-in-window-p (point-max))
                   (org-fit-window-to-buffer))
-                (let ((pressed (org--mks-read-key allowed-keys prompt)))
+                (let ((pressed (org--mks-read-key allowed-keys prompt t)))
                   (setq current (concat current pressed))
                   (cond
                    ((equal pressed "\C-g") (user-error "Abort"))
@@ -640,7 +659,35 @@ Set Org capture templates using Declarative ORG Capture Templates
 
   (defun set-org-capture-templates ()
     (setq org-capture-templates
-      (doct `(("Personal Todo"
+      (doct `(("Contact"
+               :keys "c"
+               :icon ("account_box" :set "material" :color "blue")
+               :file my/main-contact-file
+               :prepend t
+               :template ("* %(org-contacts-template-name)"
+                          ":PROPERTIES:"
+                          ":ADDRESS: %^{289 Cleveland St. Brooklyn, 11206 NY, USA}"
+                          ":BIRTHDAY: %^{yyyy-mm-dd}"
+                          ":EMAIL: %(org-contacts-template-email)"
+                          ":NOTE: %^{NOTE}"
+                          ":END:")
+               :children (("Chosen Family"
+                           :keys "c"
+                           :icon ("favorite" :set "material"  :color "purple")
+                           :headline "Chosen Family")
+                          ("Blood Family"
+                           :keys "b"
+                           :icon ("invert_colors" :set "material" :color "red")
+                           :headline "Blood Family")
+                          ("Work"
+                           :keys "w"
+                           :icon ("work" :set "material" :color "brown")
+                           :headline "Work")
+                          ("Acquaintance"
+                           :keys "a"
+                           :icon ("pan_tool" :set "material" :color "green")
+                           :headline "Acquaintance")))
+              ("Personal Todo"
                :keys "t"
                :icon ("checklist" :set "octicon" :color "green")
                :file +org-capture-todo-file
@@ -664,9 +711,9 @@ Set Org capture templates using Declarative ORG Capture Templates
                :headline "Inbox"
                :type entry
                :template ("* TODO %^{type|reply to|contact} %\\3 %? :email:"
-                        "Send an email %^{urgancy|soon|ASAP|anon|at some point|eventually} to %^{recipiant}"
-                        "about %^{topic}"
-                        "%U %i %a"))
+                          "Send an email %^{urgancy|soon|ASAP|anon|at some point|eventually} to %^{recipiant}"
+                          "about %^{topic}"
+                          "%U %i %a"))
                ("Interesting"
                 :keys "i"
                 :icon ("eye" :set "faicon" :color "lcyan")
@@ -785,9 +832,16 @@ Set Org capture templates using Declarative ORG Capture Templates
 
 
 
-*** org-roam: A Zettelkasten based on RoamResearch
+*** Org-Roam
+
+A Zettelkasten based double-referenced note taking app.
+[[https://github.com/org-roam/org-roam][Github]]
+
+**** Keybindings
 
 Setting the keybindings for basic Org Roam functionality.
+
+SPC + n + roam-function-key
 
 #+begin_src emacs-lisp
 (use-package! org-roam
@@ -893,9 +947,23 @@ Configure the capture template for org roam dailies.
         :olp ("My Journal"))))
 #+end_src
 
+*** Contacts
+
+Contacts are managed using [[https://code.orgmode.org/bzg/org-mode/raw/master/contrib/lisp/org-contacts.el][org-contact]].
+org-contact requires the org-plus-contrib package which is included in the org version installed by DOOM.
+Contact File list is declared in [[#personal][Personal]].
+
+#+begin_src emacs-lisp
+(use-package org-contacts
+  :ensure nil
+  :after org
+  :custom (org-contacts my/contact-files))
+#+end_src
+
 *** Table-Of-Contents
 
 Updates the table of contents in an org file without exporting the file.
+Reference: [[https://github.com/snosov1/toc-org][toc-org]]
 
 To use, add the tag TOC to the heading for the table.
 Append _# with the number of subheadings you would like displayed.
@@ -1108,6 +1176,7 @@ Stunningly useful.
 :PROPERTIES:
 :header-args: :tangle funcs.el
 :END:
+** Tangle On Save
 
 Hook that tangles all files within the literate program when the program file is saved.
 
@@ -1120,6 +1189,8 @@ Hook that tangles all files within the literate program when the program file is
 #+RESULTS:
 | (lambda nil (add-hook 'after-save-hook #'org-babel-tang :append :local)) | er/add-org-mode-expansions | +lookup--init-org-mode-handlers-h | (closure (t) (&rest _) (add-hook 'before-save-hook 'org-encrypt-entries nil t)) | doom--setq-gcmh-high-cons-threshold-for-org-mode-h | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | doom-disable-show-paren-mode-h | doom-disable-show-trailing-whitespace-h | +org-enable-auto-reformat-tables-h | +org-enable-auto-update-cookies-h | +org-make-last-point-visible-h | evil-org-mode | toc-org-enable | embrace-org-mode-hook | org-eldoc-load |
 
+** Open Literate Config
+
 Function to quickly open emacs literate config file.
 
 #+begin_src emacs-lisp
@@ -1130,6 +1201,8 @@ Function to quickly open emacs literate config file.
   (find-file (expand-file-name "config.org" doom-private-dir)))
 #+end_src
 
+** List Org Buffers
+
 Lists filenames of org files with buffers on them.
 
 #+begin_src emacs-lisp
@@ -1139,9 +1212,10 @@ Lists filenames of org files with buffers on them.
                   (buffer-file-name buffer))
                 (org-buffer-list 'files t))))
 #+end_src
+
 * Package declarations
 
-Any desired package not declared in a Doom module must be declared here. This seems redundant given the corresponding =use-package!= declarations, but required by Doom (presumably for lazy loading).
+Packages not declarable in doom's init.el file must be declared here.
 
 #+begin_src emacs-lisp :tangle packages.el
 ;; -*- no-byte-compile: t; -*-
