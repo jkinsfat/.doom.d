@@ -14,6 +14,8 @@
 (setq org-roam-dailies-directory "daily/")
 ;; Set Org Capture File
 (setq org-default-notes-file "~/notes/refile.org")
+;; Set Org Contacts Files
+(setq org-contacts-files '("~/org/personal/contacts.org"))
 
 (load-file (concat doom-private-dir "funcs.el"))
 
@@ -57,26 +59,43 @@
 
 
 
-(setq org-todo-keywords
-    '((sequence "REPEAT(r)" "NEXT(n@/!)" "TODO(t@/!)" "WAITING (w@/!)" "SOMEDAY(s@/!)" "PROJ(p)" "|" "DONE(d@)" "CANCELLED(c@)")
+(after! org
+  (setq org-todo-keywords
+    '((sequence "REPEAT(r)" "NEXT(n@/!)" "TODO(t@/!)" "WAITING (w@/!)"  "SOMEDAY(s@/!)" "PROJ(p)" "|" "DONE(d@)" "CANCELLED(c@)")
       (sequence "GOAL(G)" "|" "ACHIEVED(a@)" "MISSED(m@)")))
+        org-todo-keyword-faces
+        '(("REPEAT" . (:foreground "orange" :weight 'bold))
+          ("NEXT" . (:foreground "DarkOrange1" :weight 'bold))
+          ("TODO" . (:foreground "blue" :weight 'normal))
+          ("SOMEDAY" . (:foreground "sea green" :weight 'normal))
+          ("WAITING" . (:foreground "yellow" :weight 'italic))
+          ("PROJ" . (:foreground "pink" :weight 'normal))
+          ("DONE" . (:foreground "light sea green" :weight 'normal))
+          ("CANCELLED" . (:foreground "black" :weight 'normal))
+          ("GOAL" . (:foreground "purple" :weight 'bold))
+          ("ACHIEVED" . (:foreground "forest green" :weight 'bold))
+          ("MISSED" . (:foreground "red" :weight 'italic))))
 
 (setq org-log-done 'time)
 
 (setq org-log-into-drawer t)
 
-(use-package! org-super-agenda
-    :commands (org-super-agenda-mode))
-
 (after! org-agenda
-  (org-super-agenda-mode))
+  (setq org-agenda-files (directory-files-recursively "~/org/personal/" "\\.org$")))
 
 (setq org-agenda-skip-scheduled-if-done t
       org-agenda-skip-deadline-if-done t
       org-agenda-include-deadlines t
       org-agenda-block-separator nil
       org-agenda-tags-column 100 ;; from testing this seems to be a good value
-      org-agenda-compact-blocks t)
+      org-agenda-compact-blocks t
+      org-agenda-include-diary t)
+
+(use-package! org-super-agenda
+    :commands (org-super-agenda-mode))
+
+(after! org-agenda
+  (org-super-agenda-mode))
 
 (setq org-agenda-custom-commands
       '(("o" "Overview"
@@ -134,24 +153,6 @@
                            :todo ("SOMEDAY" )
                            :order 90)
                           (:discard (:tag ("Chore" "Routine" "Daily")))))))))))
-
-(use-package! org-journal
-  :after org
-  :config
-  (customize-set-variable 'org-journal-dir (concat org-roam-directory "journal"))
-  (customize-set-variable 'org-journal-file-format "private-%Y-%m-%d.org")
-  (customize-set-variable 'org-journal-date-prefix "#+TITLE: ")
-  (customize-set-variable 'org-journal-time-prefix "* ")
-  (customize-set-variable 'org-journal-time-format "")
-  (customize-set-variable 'org-journal-carryover-items "TODO=\"TODO\"")
-  (customize-set-variable 'org-journal-date-format "%Y-%m-%d")
-  (map! :leader
-        (:prefix-map ("n" . "notes")
-          (:prefix ("j" . "journal")
-            :desc "Today" "t" #'org-journal-today )))
-  (defun org-journal-today ()
-    (interactive)
-    (org-journal-new-entry t)))
 
 (use-package! doct
   :commands (doct))
@@ -454,6 +455,26 @@
                                #'org-capture-reinitialize-hook
                                ))))))
 
+(use-package! org-journal
+  :after org
+  :config
+  (customize-set-variable 'org-journal-dir (concat org-roam-directory "journal"))
+  (customize-set-variable 'org-journal-file-format "private-%Y-%m-%d.org")
+  (customize-set-variable 'org-journal-date-prefix "#+TITLE: ")
+  (customize-set-variable 'org-journal-time-prefix "* ")
+  (customize-set-variable 'org-journal-time-format "")
+  (customize-set-variable 'org-journal-carryover-items "TODO=\"TODO\"")
+  (customize-set-variable 'org-journal-date-format "%Y-%m-%d")
+  (map! :leader
+        (:prefix-map ("n" . "notes")
+          (:prefix ("j" . "journal")
+            :desc "Today" "t" #'org-journal-today )))
+  (defun org-journal-today ()
+    (interactive)
+    (org-journal-new-entry t)))
+
+(require 'diary-lib)
+
 (use-package! org-roam
   :commands (org-roam-insert org-roam-find-file org-roam-switch-to-buffer org-roam)
   :hook
@@ -463,7 +484,7 @@
   :init
   (require 'org-roam-protocol)
   (map! :leader
-        :prefix "n"
+         :prefix "n"
         :desc "org-roam" "l" #'org-roam
         :desc "org-roam-insert" "i" #'org-roam-insert
         :desc "org-roam-switch-to-buffer" "b" #'org-roam-switch-to-buffer
@@ -479,22 +500,22 @@
          :unnarrowed t
          :immediate-finish t)))
 
-(after! org-roam
-  (setq my/org-roam-files (directory-files org-roam-directory  t ".*.org"))
-  (setq my/org-roam-todo-file (concat org-roam-directory "todo.org"))
-  (setq org-refile-targets `((,(append (my/open-org-files-list) (directory-files org-directory  t ".*.org")) :maxlevel . 7)))
-  (setq org-agenda-files `(,my/org-roam-todo-file))
+;; (after! org-roam
+;;   (setq my/org-roam-files (directory-files org-roam-directory  t ".*.org"))
+;;   (setq my/org-roam-todo-file (concat org-roam-directory "todo.org"))
+;;   (setq org-refile-targets `((,(append (my/open-org-files-list) (directory-files org-directory  t ".*.org")) :maxlevel . 7)))
+;;   ;; (push my/org-roam-todo-file org-agenda-files)
 
-  (defun my/org-roam-get-title (path)
-    (save-window-excursion
-      ;; A simple find-file didn't work when the original was narrowed
-      (with-temp-buffer
-        (insert-file-contents path)
-        (org-mode)
-        (car (org-roam--extract-titles-title)))))
+;;   (defun my/org-roam-get-title (path)
+;;     (save-window-excursion
+;;       ;; A simple find-file didn't work when the original was narrowed
+;;       (with-temp-buffer
+;;         (insert-file-contents path)
+;;         (org-mode)
+;;         (car (org-roam--extract-titles-title)))))
 
-  (add-to-list 'org-capture-templates '("r" "org-roam todo" entry (file my/org-roam-todo-file)
-                                        "* TODO %?  #[[%F][%(my/org-roam-get-title \"%F\")]]\n%i\n%a")))
+;;   (add-to-list 'org-capture-templates '("r" "org-roam todo" entry (file my/org-roam-todo-file)
+;;                                         "* TODO %?  #[[%F][%(my/org-roam-get-title \"%F\")]]\n%i\n%a")))
 
 (after! org-roam
   (map! :leader

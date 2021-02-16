@@ -36,16 +36,22 @@
       - [[#completion-timestamp][Completion Timestamp]]
       - [[#logging][Logging]]
     - [[#tags][Tags]]
-    - [[#super-agenda][Super Agenda]]
+    - [[#org-agenda][Org Agenda]]
+      - [[#agenda-files][Agenda Files]]
       - [[#general-settings][General Settings]]
+    - [[#super-agenda][Super Agenda]]
       - [[#agenda-groups][Agenda Groups]]
     - [[#org-capture][Org-Capture]]
-    - [[#org-journal-managing-daily-journal-file][org-journal: Managing daily journal file]]
+      - [[#prettify-capture-selection][Prettify Capture Selection]]
+      - [[#capture-templates][Capture Templates]]
+    - [[#org-journal][Org Journal]]
+      - [[#diary-utility-library][Diary Utility Library]]
     - [[#org-roam][Org-Roam]]
       - [[#keybindings][Keybindings]]
-      - [[#capture-templates][Capture Templates]]
+      - [[#capture-templates-1][Capture Templates]]
       - [[#org-roam-dailies][Org-Roam Dailies]]
-    - [[#contacts][Contacts]]
+    - [[#org-contacts][Org Contacts]]
+      - [[#troubleshooting][Troubleshooting]]
     - [[#table-of-contents][Table-Of-Contents]]
     - [[#org-download-inserting-images-into-org-mode][org-download: Inserting images into org-mode]]
     - [[#org-cliplink-better-external-links][org-cliplink: Better external links]]
@@ -255,6 +261,8 @@ Contact File List
 (setq org-roam-dailies-directory "daily/")
 ;; Set Org Capture File
 (setq org-default-notes-file "~/notes/refile.org")
+;; Set Org Contacts Files
+(setq org-contacts-files '("~/org/personal/contacts.org"))
 #+end_src
 
 #+RESULTS:
@@ -366,10 +374,23 @@ States with the ! symbol will take a note when assgned
 If the @ or ! symbol is preceded by a / then the timestamp or note will be created when leaving that state.
 
 #+begin_src emacs-lisp
-(setq org-todo-keywords
-    '((sequence "REPEAT(r)" "NEXT(n@/!)" "TODO(t@/!)" "WAITING (w@/!)" "SOMEDAY(s@/!)" "PROJ(p)" "|" "DONE(d@)" "CANCELLED(c@)")
+(after! org
+  (setq org-todo-keywords
+    '((sequence "REPEAT(r)" "NEXT(n@/!)" "TODO(t@/!)" "WAITING (w@/!)"  "SOMEDAY(s@/!)" "PROJ(p)" "|" "DONE(d@)" "CANCELLED(c@)")
       (sequence "GOAL(G)" "|" "ACHIEVED(a@)" "MISSED(m@)")))
-#+end_src
+        org-todo-keyword-faces
+        '(("REPEAT" . (:foreground "orange" :weight 'bold))
+          ("NEXT" . (:foreground "DarkOrange1" :weight 'bold))
+          ("TODO" . (:foreground "blue" :weight 'normal))
+          ("SOMEDAY" . (:foreground "sea green" :weight 'normal))
+          ("WAITING" . (:foreground "yellow" :weight 'italic))
+          ("PROJ" . (:foreground "pink" :weight 'normal))
+          ("DONE" . (:foreground "light sea green" :weight 'normal))
+          ("CANCELLED" . (:foreground "black" :weight 'normal))
+          ("GOAL" . (:foreground "purple" :weight 'bold))
+          ("ACHIEVED" . (:foreground "forest green" :weight 'bold))
+          ("MISSED" . (:foreground "red" :weight 'italic))))
+#+END_SRC
 
 **** Completion Timestamp
 
@@ -381,7 +402,7 @@ Record timestamp when a todo is completed
 
 **** Logging
 
-All logging made on a todo will be submitted to it's LOGBOOK drawer.
+All logging made to a Todo will be submitted to that Todo's LOGBOOK drawer.
 
 #+begin_src emacs-lisp
 (setq org-log-into-drawer t)
@@ -403,6 +424,30 @@ Communication Tag Group
 ((phone . 112) (email . 101) (chat . 99) (snailmail . 115))
 :end:
 Not sure what I want to use tags for quite yet. Common tactic seems to be site of taskwork so that you can group tasks by their location and knock related ones out at one time.
+*** Org Agenda
+**** Agenda Files
+
+Set the list of files that the agenda will pull todo items from.
+
+#+begin_src emacs-lisp
+(after! org-agenda
+  (setq org-agenda-files (directory-files-recursively "~/org/personal/" "\\.org$")))
+#+end_src
+
+**** General Settings
+
+#+BEGIN_SRC emacs-lisp
+(setq org-agenda-skip-scheduled-if-done t
+      org-agenda-skip-deadline-if-done t
+      org-agenda-include-deadlines t
+      org-agenda-block-separator nil
+      org-agenda-tags-column 100 ;; from testing this seems to be a good value
+      org-agenda-compact-blocks t
+      org-agenda-include-diary t)
+#+END_SRC
+
+#+RESULTS:
+: t
 
 *** Super Agenda
 
@@ -418,16 +463,7 @@ org-super-agenda allows me to easily group weekly or daily agenda items by state
   (org-super-agenda-mode))
 #+END_SRC
 
-**** General Settings
 
-#+BEGIN_SRC emacs-lisp
-(setq org-agenda-skip-scheduled-if-done t
-      org-agenda-skip-deadline-if-done t
-      org-agenda-include-deadlines t
-      org-agenda-block-separator nil
-      org-agenda-tags-column 100 ;; from testing this seems to be a good value
-      org-agenda-compact-blocks t)
-#+END_SRC
 
 **** Agenda Groups
 
@@ -493,8 +529,13 @@ TODO: Define Super Agenda Groups
 
 #+end_src
 
+#+RESULTS:
+| o | Overview | ((agenda  ((org-agenda-span 'day) (org-super-agenda-groups '((:name Today :time-grid t :date today :todo TODAY :scheduled today :order 1))))) (alltodo  ((org-agenda-overriding-header ) (org-super-agenda-groups '((:name Next to do :todo NEXT :order 1) (:name Important :tag Important :priority A :order 6) (:name Due Today :deadline today :order 2) (:name Due Soon :deadline future :order 8) (:name Overdue :deadline past :face error :order 7) (:name Assignments :tag Assignment :order 10) (:name Issues :tag Issue :order 12) (:name Emacs :tag Emacs :order 13) (:name Projects :tag Project :order 14) (:name Research :tag Research :order 15) (:name To read :tag Read :order 30) (:name Waiting :todo WAITING :order 20) (:name Trivial :priority<= E :tag (Trivial Unimportant) :todo (SOMEDAY) :order 90) (:discard (:tag (Chore Routine Daily)))))))) |
+
 *** Org-Capture
-  Let's make the agenda look nicer
+
+**** Prettify Capture Selection
+  Let's make the Capture select look nicer by adding icons, a custom dialog, and improve the template selection by displaying the prefixes of multiple-input selection commands alongside single input commands.
 
 #+BEGIN_SRC emacs-lisp :tangle no :noweb-ref prettify-capture
 (defun org-capture-select-template-prettier (&optional keys)
@@ -604,28 +645,8 @@ is selected, only the bare key is returned."
 (advice-add 'org-mks :override #'org-mks-pretty)
 #+END_SRC
 
-*** org-journal: Managing daily journal file
+**** Capture Templates
 
-#+BEGIN_SRC emacs-lisp
-(use-package! org-journal
-  :after org
-  :config
-  (customize-set-variable 'org-journal-dir (concat org-roam-directory "journal"))
-  (customize-set-variable 'org-journal-file-format "private-%Y-%m-%d.org")
-  (customize-set-variable 'org-journal-date-prefix "#+TITLE: ")
-  (customize-set-variable 'org-journal-time-prefix "* ")
-  (customize-set-variable 'org-journal-time-format "")
-  (customize-set-variable 'org-journal-carryover-items "TODO=\"TODO\"")
-  (customize-set-variable 'org-journal-date-format "%Y-%m-%d")
-  (map! :leader
-        (:prefix-map ("n" . "notes")
-          (:prefix ("j" . "journal")
-            :desc "Today" "t" #'org-journal-today )))
-  (defun org-journal-today ()
-    (interactive)
-    (org-journal-new-entry t)))
-
-#+END_SRC
 Set Org capture templates using Declarative ORG Capture Templates
 #+begin_src emacs-lisp :noweb no-export
 (use-package! doct
@@ -830,7 +851,36 @@ Set Org capture templates using Declarative ORG Capture Templates
 | sequence | TODO(t)    | In-Progress(p) |         |   | DONE(d) |              |
 | sequence | WAITING(w) | BLOCKED(b)     | HOLD(h) |   |         | CANCELLED(c) |
 
+*** Org Journal
 
+#+BEGIN_SRC emacs-lisp
+(use-package! org-journal
+  :after org
+  :config
+  (customize-set-variable 'org-journal-dir (concat org-roam-directory "journal"))
+  (customize-set-variable 'org-journal-file-format "private-%Y-%m-%d.org")
+  (customize-set-variable 'org-journal-date-prefix "#+TITLE: ")
+  (customize-set-variable 'org-journal-time-prefix "* ")
+  (customize-set-variable 'org-journal-time-format "")
+  (customize-set-variable 'org-journal-carryover-items "TODO=\"TODO\"")
+  (customize-set-variable 'org-journal-date-format "%Y-%m-%d")
+  (map! :leader
+        (:prefix-map ("n" . "notes")
+          (:prefix ("j" . "journal")
+            :desc "Today" "t" #'org-journal-today )))
+  (defun org-journal-today ()
+    (interactive)
+    (org-journal-new-entry t)))
+
+#+END_SRC
+
+**** Diary Utility Library
+
+This Diary Utility Library is useful for date manipulation. Required by org-contacts to generate anniversaries from important dates.
+
+#+begin_src emacs-lisp
+(require 'diary-lib)
+#+end_src
 
 *** Org-Roam
 
@@ -853,7 +903,7 @@ SPC + n + roam-function-key
   :init
   (require 'org-roam-protocol)
   (map! :leader
-        :prefix "n"
+         :prefix "n"
         :desc "org-roam" "l" #'org-roam
         :desc "org-roam-insert" "i" #'org-roam-insert
         :desc "org-roam-switch-to-buffer" "b" #'org-roam-switch-to-buffer
@@ -898,22 +948,22 @@ The =org-capture-templates= templates used here:
 
 
 #+begin_src emacs-lisp
-(after! org-roam
-  (setq my/org-roam-files (directory-files org-roam-directory  t ".*.org"))
-  (setq my/org-roam-todo-file (concat org-roam-directory "todo.org"))
-  (setq org-refile-targets `((,(append (my/open-org-files-list) (directory-files org-directory  t ".*.org")) :maxlevel . 7)))
-  (setq org-agenda-files `(,my/org-roam-todo-file))
+;; (after! org-roam
+;;   (setq my/org-roam-files (directory-files org-roam-directory  t ".*.org"))
+;;   (setq my/org-roam-todo-file (concat org-roam-directory "todo.org"))
+;;   (setq org-refile-targets `((,(append (my/open-org-files-list) (directory-files org-directory  t ".*.org")) :maxlevel . 7)))
+;;   ;; (push my/org-roam-todo-file org-agenda-files)
 
-  (defun my/org-roam-get-title (path)
-    (save-window-excursion
-      ;; A simple find-file didn't work when the original was narrowed
-      (with-temp-buffer
-        (insert-file-contents path)
-        (org-mode)
-        (car (org-roam--extract-titles-title)))))
+;;   (defun my/org-roam-get-title (path)
+;;     (save-window-excursion
+;;       ;; A simple find-file didn't work when the original was narrowed
+;;       (with-temp-buffer
+;;         (insert-file-contents path)
+;;         (org-mode)
+;;         (car (org-roam--extract-titles-title)))))
 
-  (add-to-list 'org-capture-templates '("r" "org-roam todo" entry (file my/org-roam-todo-file)
-                                        "* TODO %?  #[[%F][%(my/org-roam-get-title \"%F\")]]\n%i\n%a")))
+;;   (add-to-list 'org-capture-templates '("r" "org-roam todo" entry (file my/org-roam-todo-file)
+;;                                         "* TODO %?  #[[%F][%(my/org-roam-get-title \"%F\")]]\n%i\n%a")))
 #+end_src
 
 **** Org-Roam Dailies
@@ -947,7 +997,7 @@ Configure the capture template for org roam dailies.
         :olp ("My Journal"))))
 #+end_src
 
-*** Contacts
+*** Org Contacts
 
 Contacts are managed using [[https://code.orgmode.org/bzg/org-mode/raw/master/contrib/lisp/org-contacts.el][org-contact]].
 org-contact requires the org-plus-contrib package which is included in the org version installed by DOOM.
@@ -959,6 +1009,17 @@ Contact File list is declared in [[#personal][Personal]].
   :after org
   :custom (org-contacts my/contact-files))
 #+end_src
+
+**** Troubleshooting
+
+org-contacts-anniversaries uses the emacs diary-lib module to parse the BIRTHDAY property and generate the anniversaries in the agenda.
+If these are not showing in the agenda, or the agenda is throwing bad-diary-sexp errors use these resources to debug.
+[[https://lists.gnu.org/archive/html/emacs-orgmode/2014-09/msg00910.html][These people have left record of their suffering on the internet so that you don't have to!]]
+
+- Ensure that the Diary-lib module is installed.
+- The Diary-lib module cannot parse dates from before 1970!
+- A diary declaration starting with '%%' will not work if preceded by whitespace on the same line.
+- If an designated anniversary property like BIRTHDAY is left empty, it will throw an error.
 
 *** Table-Of-Contents
 
