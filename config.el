@@ -3,19 +3,22 @@
 (setq user-full-name "Jason Kinsfather"
       user-mail-address "jasonrkinsfather@gmail")
 
-(setq my/main-contact-file "~/org/personal/contacts.org"
+(setq my/literate-config-file "~/.doom.d/config.org")
+
+(setq my/org-directory "~/org/")
+
+(setq my/work-directory (concat my/org-directory "work/")
+      my/personal-directory (concat my/org-directory "personal/"))
+
+(setq my/personal-capture-file (concat my/personal-directory "refile.org")
+      my/work-capture-file (concat my/work-directory "refile.org"))
+
+(setq my/main-contact-file (concat my/org-directory "contacts.org")
       my/contact-files (list my/main-contact-file))
 
-;; Set Org Directory
-(setq org-directory "~/notes/")
-;; Set Org Roam Directory
-(setq org-roam-directory "~/org-roam")
-;; Set Org Roam Dailies Directory
-(setq org-roam-dailies-directory "daily/")
-;; Set Org Capture File
-(setq org-default-notes-file "~/notes/refile.org")
-;; Set Org Contacts Files
-(setq org-contacts-files '("~/org/personal/contacts.org"))
+(setq my/org-roam-directory "~/org-roam/")
+
+(setq my/org-roam-dailies-directory "daily/")
 
 (load-file (concat doom-private-dir "funcs.el"))
 
@@ -59,22 +62,25 @@
 
 
 
+(setq org-directory my/org-directory)
+(setq org-default-notes-file my/personal-capture-file)
+
 (after! org
   (setq org-todo-keywords
-    '((sequence "REPEAT(r)" "NEXT(n@/!)" "TODO(t@/!)" "WAITING (w@/!)"  "SOMEDAY(s@/!)" "PROJ(p)" "|" "DONE(d@)" "CANCELLED(c@)")
-      (sequence "GOAL(G)" "|" "ACHIEVED(a@)" "MISSED(m@)")))
+    '((sequence "REPEAT(r)" "NEXT(n@/!)" "TODO(t@/!)" "WAIT(w@/!)" "SOMEDAY(s@/!)" "PROJ(p)" "|" "DONE(d@)" "CANCELLED(c@)")
+      (sequence "GOAL(G)" "|" "ACHIEVED(a@)" "MISSED(m@)"))
         org-todo-keyword-faces
         '(("REPEAT" . (:foreground "orange" :weight 'bold))
           ("NEXT" . (:foreground "DarkOrange1" :weight 'bold))
           ("TODO" . (:foreground "blue" :weight 'normal))
           ("SOMEDAY" . (:foreground "sea green" :weight 'normal))
-          ("WAITING" . (:foreground "yellow" :weight 'italic))
-          ("PROJ" . (:foreground "pink" :weight 'normal))
+          ("WAIT" . (:foreground "dark yellow" :weight 'italic))
+          ("PROJ" . (:foreground "hot pink" :weight 'normal))
           ("DONE" . (:foreground "light sea green" :weight 'normal))
           ("CANCELLED" . (:foreground "black" :weight 'normal))
           ("GOAL" . (:foreground "purple" :weight 'bold))
           ("ACHIEVED" . (:foreground "forest green" :weight 'bold))
-          ("MISSED" . (:foreground "red" :weight 'italic))))
+          ("MISSED" . (:foreground "red" :weight 'italic)))))
 
 (setq org-log-done 'time)
 
@@ -175,8 +181,62 @@
                  `(("q" ,(concat (all-the-icons-octicon "stop" :face 'all-the-icons-red :v-adjust 0.01) "\tAbort")))))))
   (advice-add 'org-capture-select-template :override #'org-capture-select-template-prettier)
   
-  (defun org-mks-pretty (table title &optional prompt specials)
-    "Select a member of an alist with multiple keys. Prettified.
+  (defun my/scroll (key &optional additional-keys)
+      "Receive KEY and scroll the current window accordingly.
+  When ADDITIONAL-KEYS is not nil, also include SPC and DEL in the
+  allowed keys for scrolling, as expected in the export dispatch
+  window."
+    (let ((scrollup (if additional-keys '(?\s 22) 22))
+          (scrolldown (if additional-keys `(?\d 134217846) 134217846)))
+         (eval
+          `(cl-case ,key
+             ;; C-n
+             (14
+              (if (not (pos-visible-in-window-p (point-max)))
+                  (ignore-errors (scroll-up 1))
+                  (message "End of buffer")
+                  (sit-for 1)))
+             ;; C-p
+             (16
+              (if (not (pos-visible-in-window-p (point-min)))
+                  (ignore-errors (scroll-down 1))
+                  (message "Beginning of buffer")
+                  (sit-for 1)))
+             ;; SPC or
+             (,scrollup
+              (if (not (pos-visible-in-window-p (point-max)))
+                  (scroll-up nil)
+                  (message "End of buffer")
+                  (sit-for 1)))
+             ;; DEL
+             (,scrolldown
+              (if (not (pos-visible-in-window-p (point-min)))
+                  (scroll-down nil)
+                  (message "Beginning of buffer")
+                  (sit-for 1)))))))
+  
+  (defun my/make-selection-read-key (allowed-keys prompt navigation-keys)
+    "Read a key and ensure it is a member of ALLOWED-KEYS.
+  Enable keys to scroll the window if NAVIGATION-KEYS are set.
+  TAB, SPC, RET are treated equivalently."
+    (setq header-line-format (when-navigation-keys "Use C-n, C-p, C-v, M-v to navigate."))
+    (let ((char-key (read-char-exclusive prompt)))
+         (if (and navigation-keys (memq char-key '(14 16 22 134217846)))
+             (progn
+               (my/scroll char-key)
+               (my/make-selection-read-key allowed-keys prompt navigation-keys))
+             (let ((key (char-to-string
+                         (pcase char-key
+                           ((or ?\s ?\t ?\r) ?\t)
+                           (char char)))))
+                  (if (member key allowed-keys)
+                      key
+                      (message "Invalid Key: `%s'" key)
+                      (sit-for 1)
+                      (my/make-selection-read-key allowed-keys prompt navigation-keys))))))
+  
+  (defun my/make-selection (table title &optional prompt specials)
+      "Select a member of an alist with multiple keys. Prettified.
   
   TABLE is the alist which should contain entries where the car is a string.
   There should be two types of entries.
@@ -204,65 +264,75 @@
             (buffer (org-switch-to-buffer-other-window "*Org Select*"))
             (prompt (or prompt "Select: "))
             case-fold-search
-            current)
+            current-selector)
         (unwind-protect
             (catch 'exit
+              ;; Start Selection Loop
               (while t
                 (setq-local evil-normal-state-cursor (list nil))
                 (erase-buffer)
                 (insert title "\n\n")
-                (let ((des-keys nil)
+                (let ((prefix-desc-keys nil)
                       (allowed-keys '("\C-g"))
                       (tab-alternatives '("\s" "\t" "\r"))
                       (cursor-type nil))
-                  ;; Populate allowed keys and descriptions keys
-                  ;; available with CURRENT selector.
-                  (let ((re (format "\\`%s\\(.\\)\\'"
-                                    (if current (regexp-quote current) "")))
-                        (prefix (if current (concat current " ") "")))
-                    (dolist (entry table)
-                      (pcase entry
-                        ;; Description.
-                        (`(,(and key (pred (string-match re))) ,desc)
-                         (let ((k (match-string 1 key)))
-                           (push k des-keys)
-                           ;; Keys ending in tab, space or RET are equivalent.
-                           (if (member k tab-alternatives)
-                               (push "\t" allowed-keys)
-                             (push k allowed-keys))
-                           (insert (propertize prefix 'face 'font-lock-comment-face) (propertize k 'face 'bold) (propertize "›" 'face 'font-lock-comment-face) "  " desc "…" "\n")))
-                        ;; Usable entry.
-                        (`(,(and key (pred (string-match re))) ,desc . ,_)
-                         (let ((k (match-string 1 key)))
-                           (insert (propertize prefix 'face 'font-lock-comment-face) (propertize k 'face 'bold) "   " desc "\n")
-                           (push k allowed-keys)))
-                        (_ nil))))
-                  ;; Insert special entries, if any.
-                  (when specials
-                    (insert "─────────────────────────\n")
-                    (pcase-dolist (`(,key ,description) specials)
-                      (insert (format "%s   %s\n" (propertize key 'face '(bold all-the-icons-red)) description))
-                      (push key allowed-keys)))
-                  ;; Display UI and let user select an entry or
-                  ;; a sub-level prefix.
-                  (goto-char (point-min))
-                  (unless (pos-visible-in-window-p (point-max))
-                    (org-fit-window-to-buffer))
-                  (let ((pressed (org--mks-read-key allowed-keys prompt t)))
-                    (setq current (concat current pressed))
-                    (cond
-                     ((equal pressed "\C-g") (user-error "Abort"))
-                     ;; Selection is a prefix: open a new menu.
-                     ((member pressed des-keys))
-                     ;; Selection matches an association: return it.
-                     ((let ((entry (assoc current table)))
-                        (and entry (throw 'exit entry))))
-                     ;; Selection matches a special entry: return the
-                     ;; selection prefix.
-                     ((assoc current specials) (throw 'exit current))
-                     (t (error "No entry available")))))))
-          (when buffer (kill-buffer buffer))))))
-  (advice-add 'org-mks :override #'org-mks-pretty)
+                  ;; Populate Allowed keys and Descriptions keys available with current selector.
+                     (let ((re (format "\\`%s\\(.\\)\\'"
+                                       (if current-selector
+                                           (regexp-quote current-selector)
+                                           "")))
+                           (prefix (if current-selector
+                                       (concat current-selector " ")
+                                       "")))
+                          (dolist (entry table)
+                            (pcase entry
+                              ;; Table Entry is a Description Key
+                              (`(,(and key (pred (string-match re))) ,desc)
+                                (let ((k (match-string 1 key)))
+                                     (push k prefix-desc-keys)
+                                     ;; Keys ending in tab, space or RET are equivalent.
+                                     (if (member k tab-alternatives)
+                                         (push "\t" allowed-keys)
+                                         (push k allowed-keys))
+                                     (insert (propertize prefix 'face 'font-lock-comment-face) (propertize k 'face 'bold) (propertize ">" 'face 'font-lock-comment-face) "  " desc "..." "\n")))
+                              ;; Table Entry is an Allowed Key
+                              (`(,(and key (pred (string-match re))) ,desc . ,_)
+                                (let ((k (match-string 1 key)))
+                                     (insert (propertize prefix 'face 'font-lock-comment-face) (propertize k 'face 'bold) "   " desc "\n")
+                                     (push k allowed-keys)))
+                              ;;All other entries, do nothing.
+                              (_ nil))))
+                     ;; Insert Special Entries, if any.
+                     (when specials
+                       (insert "─────────────────────────\n")
+                       (pcase-dolist (`(,key ,description) specials)
+                         (insert (format "%s   %s\n" (propertize key 'face '(bold all-the-icons-red)) description))
+                         (push key allowed-keys)))
+                     ;; Display UI and let user select an entry or a sub-level prefix.
+                     ;; Begin by moving cursor to the character at the minimum accessible point in the selection buffer.
+                     (goto-char (point-min)) ;
+                     ;; If the maximum point of the buffer is not visible in the current window, resize window to fit the full buffer.
+                     (unless (pos-visible-in-window-p (point-max))
+                             (org-fit-window-to-buffer))
+                     ;;
+                     (let ((keypress (org--mks-read-key allowed-keys prompt t)))
+                          (setq current-selector (concat current-selector keypress))
+                          (cond
+                            ;; User has requested aborting the selection.
+                            ((equal keypress "\C-g") (user-error "Abort"))
+                            ;; Selection is a prefix description:
+                            ;; Continue Selection Loop, Opening a New Menu.
+                            ((member keypress prefix-desc-keys))
+                            ;; Selection matches an association:
+                            ;; Exit the Selection Loop and return the alist entry for the current selector.
+                            ((let ((entry (assoc current-selector table)))
+                                  (and entry (throw 'exit entry))))
+                            ;; Selection matches a special entry:
+                            ;; Exit the Selection Loop and return the current selector.
+                            ((assoc current-selector specials) (throw 'exit current-selector)
+                            (t (error "No entry available")))))))
+              (when buffer (kill-buffer buffer)))))))
+  (advice-add 'org-mks :override #'my/make-selection)
   (setq +org-capture-recipes (concat (file-name-as-directory org-directory) "cook.org"))
 
   (defun +doct-icon-declaration-to-icon (declaration)
@@ -408,12 +478,6 @@
                 :file ""
                 :custom (:time-or-todo "")
                 :children (("Project-local todo"
-                            :keys "t"
-                            :icon ("checklist" :set "octicon" :color "green")
-                            :time-or-todo "TODO"
-                            :file +org-capture-project-notes-file)
-                           ("Project-local note"
-                            :keys "n"
                             :icon ("sticky-note" :set "faicon" :color "yellow")
                             :time-or-todo "%U"
                             :file +org-capture-project-notes-file)
@@ -475,6 +539,9 @@
 
 (require 'diary-lib)
 
+(setq org-roam-directory my/org-roam-directory
+      org-roam-dailies-directory my/org-roam-dailies-directory)
+
 (use-package! org-roam
   :commands (org-roam-insert org-roam-find-file org-roam-switch-to-buffer org-roam)
   :hook
@@ -484,7 +551,7 @@
   :init
   (require 'org-roam-protocol)
   (map! :leader
-         :prefix "n"
+        :prefix "n"
         :desc "org-roam" "l" #'org-roam
         :desc "org-roam-insert" "i" #'org-roam-insert
         :desc "org-roam-switch-to-buffer" "b" #'org-roam-switch-to-buffer
